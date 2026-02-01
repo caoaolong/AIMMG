@@ -1,0 +1,3 @@
+[submodule "state-monitor"]
+	path = state-monitor
+	url = https://github.com/caoaolong/state-monitor.git
