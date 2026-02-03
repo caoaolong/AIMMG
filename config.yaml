@@ -1,0 +1,7 @@
+characters:
+  model: qwen3-max
+  api_key: sk-64539cdd19aa4ae388e5d009f2850cdd
+
+moderator:
+  model: qwen3-max
+  api_key: sk-64539cdd19aa4ae388e5d009f2850cdd
