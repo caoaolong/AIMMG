@@ -115,17 +115,20 @@ def _msg_content(reply_msg) -> str:
 async def run_scenes(story: dict, moderator: Character, characters: Dict[str, Character], memory: StoryMemory):
     participants: list[PlayerAgent] = [moderator.agent,
                                        *[c.agent for c in characters.values()]]
-    scene = story["master"][0]
-    scene_id = "0"
-    scene_name = scene.get("name", "场景 1")
+    scene = story["master"][1]
+    scene_id = scene["id"]
+    scene_name = scene.get("name", "场景 2")
     console.print(Rule(f"[bold cyan]{scene_name}[/bold cyan]", style="cyan"))
     async with MsgHub(participants=participants) as scene_hub:
         if "prompts" in scene:
-            prompt = f"现在是第一幕, {', '.join(scene['prompts'])}\n\n注意：时刻要注意自己当前要完成的任务，不要偏离任务目标！"
+            prompt = f"现在是第二幕, {', '.join(scene['prompts'])}\n\n注意：时刻要注意自己当前要完成的任务，不要偏离任务目标！"
             console.print(
                 Panel(prompt, title="[bold]主持人[/bold]", border_style="yellow"))
             memory.add(scene_id, scene_name, moderator.id,
-                       moderator.name, prompt)
+                       moderator.name, json.dump({
+                           "type": "text",
+                           "text": prompt
+                       }))
             for agent in scene_hub.participants:
                 if agent.name == "moderator":
                     continue

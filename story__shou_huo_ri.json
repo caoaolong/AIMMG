@@ -1,5 +1,6 @@
 {
 	"name": "收获日",
+	"cover": "",
 	"master": [
 		{
 			"id": "a43c72a8-a464-41ed-8768-53d18f0204ec",
@@ -263,7 +264,7 @@
 			"id": "ba4edb9e-13ce-4ab1-b05b-25a20b63ae80",
 			"name": "艾琳·琼斯",
 			"description": "市长夫人，高挑冷艳的神秘女人",
-			"introduction": "",
+			"introduction": "冷若冰霜的神秘女人，市长夫人艾琳·琼斯，170cm，55kg",
 			"scenes": [
 				{
 					"prompts": [

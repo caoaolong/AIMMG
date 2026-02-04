@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ story.name }} - 剧本详情</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.8.18/css/layui.min.css">
+  <style>
+    .scene-prompt { white-space: pre-wrap; margin: 8px 0; padding: 8px; background: #f8f8f8; border-radius: 4px; line-height: 1.8; }
+    /* 角色列表：左侧图片 9:16，右侧 Tab 分幕 */
+    .char-list-item { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid #eee; }
+    .char-list-item:last-child { border-bottom: none; margin-bottom: 0; }
+    .char-list-left { flex-shrink: 0; width: 180px; }
+    .char-avatar-wrap { width: 100%; aspect-ratio: 9/16; overflow: hidden; background: #f0f0f0; border-radius: 4px; }
+    .char-avatar-wrap .char-avatar { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .char-list-right { flex: 1; min-width: 0; }
+    .char-list-right .layui-tab-title { margin-bottom: 0; }
+    .char-list-right .layui-tab-content { padding: 12px 0; }
+    .scene-prompt { white-space: pre-wrap; margin: 8px 0; padding: 8px; background: #f8f8f8; border-radius: 4px; line-height: 1.8; }
+    .char-scene-content { line-height: 1.8; }
+    .char-scene-content p, .char-scene-content li { line-height: 1.8; margin: 6px 0; }
+    /* 角色页左侧固定导航 */
+    .char-tab-pane { position: relative; }
+    .char-nav { position: fixed; left: 0; top: 80px; bottom: 0; width: 140px; overflow-y: auto; background: #f8f8f8; border-right: 1px solid #eee; z-index: 10; padding: 12px 0; }
+    .char-nav-title { padding: 0 12px 8px; font-size: 12px; color: #999; border-bottom: 1px solid #eee; margin-bottom: 8px; }
+    .char-nav-list { list-style: none; margin: 0; padding: 0; }
+    .char-nav-list li { margin: 0; }
+    .char-nav a { display: block; padding: 8px 12px; color: #333; text-decoration: none; font-size: 14px; }
+    .char-nav a:hover { background: #1E9FFF; color: #fff; }
+    .char-list-wrap { margin-left: 160px; padding-left: 16px; }
+    .char-list-item { scroll-margin-top: 24px; }
+    @media (max-width: 768px) {
+      .char-nav { display: none; }
+      .char-list-wrap { margin-left: 0; padding-left: 0; }
+      .char-list-item { flex-direction: column; }
+      .char-list-left { width: 100%; max-width: 240px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layui-container" style="padding-top: 24px; padding-bottom: 48px;">
+    <div class="layui-card">
+      <div class="layui-card-header">
+        <a href="/" class="layui-btn layui-btn-sm layui-btn-primary">← 返回列表</a>
+        <span style="margin-left: 12px; font-size: 18px;">{{ story.name }}</span>
+      </div>
+      <div class="layui-card-body">
+        <div class="layui-tab layui-tab-brief" lay-filter="detail">
+          <ul class="layui-tab-title">
+            <li class="layui-this">场景</li>
+            <li>角色</li>
+          </ul>
+          <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+              <div class="layui-collapse">
+                {% for scene in story.master %}
+                <div class="layui-colla-item">
+                  <h2 class="layui-colla-title">第 {{ loop.index }} 幕 {% if scene.name %}{{ scene.name }}{% endif %}</h2>
+                  <div class="layui-colla-content">
+                    {% if scene.prompts %}
+                    <h4>剧本片段</h4>
+                    {% for p in scene.prompts %}
+                    <div class="scene-prompt">{{ p }}</div>
+                    {% endfor %}
+                    {% endif %}
+                    {% if scene.notes %}
+                    <h4>备注</h4>
+                    <ul class="layui-list">
+                      {% for n in scene.notes %}
+                      <li>{{ n }}</li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if scene.choices %}
+                    <h4>选项</h4>
+                    <ul class="layui-list">
+                      {% for key, val in scene.choices.items() %}
+                      <li><strong>{{ key }}</strong>: {{ val.description if val is mapping else val }}</li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="layui-tab-item char-tab-pane">
+              <nav class="char-nav">
+                <div class="char-nav-title">角色</div>
+                <ul class="char-nav-list">
+                  {% for char in story.characters %}
+                  <li><a href="#char-{{ loop.index0 }}" data-char-index="{{ loop.index0 }}">{{ char.name }}</a></li>
+                  {% endfor %}
+                </ul>
+              </nav>
+              <div class="char-list-wrap">
+              {% for char in story.characters %}
+              <div class="char-list-item" id="char-{{ loop.index0 }}">
+                <div class="char-list-left">
+                  <div class="char-avatar-wrap">
+                    <img class="char-avatar" src="/results/characters/{{ char.id }}.png" alt="{{ char.name }}" onerror="this.style.display='none'">
+                  </div>
+                </div>
+                <div class="char-list-right">
+                  <h3 style="margin: 0 0 8px 0;">{{ char.name }}</h3>
+                  <p style="margin: 0 0 4px 0; color: #666;"><strong>简介</strong> {{ char.description or '-' }}</p>
+                  <p style="margin: 0 0 16px 0; color: #666;"><strong>介绍</strong> {{ char.introduction or '-' }}</p>
+                  {% if char.scenes %}
+                  <div class="layui-tab layui-tab-brief char-scene-content" lay-filter="char-{{ loop.index0 }}">
+                    <ul class="layui-tab-title">
+                      {% for s_block in char.scenes %}
+                      <li class="{% if loop.first %}layui-this{% endif %}">第 {{ loop.index }} 幕</li>
+                      {% endfor %}
+                    </ul>
+                    <div class="layui-tab-content">
+                      {% for s_block in char.scenes %}
+                      <div class="layui-tab-item {% if loop.first %}layui-show{% endif %}">
+                        {% if s_block.prompts %}
+                        <div style="margin-bottom: 12px;">
+                          {% for p in s_block.prompts %}
+                          <div class="scene-prompt">{{ p }}</div>
+                          {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if s_block.tasks %}
+                        <div style="margin-bottom: 12px;"><strong>任务</strong>
+                          <ul class="layui-list">
+                            {% for t in s_block.tasks %}
+                            <li>{{ t }}</li>
+                            {% endfor %}
+                          </ul>
+                        </div>
+                        {% endif %}
+                        {% if s_block.skills %}
+                        <div style="margin-bottom: 12px;"><strong>技能/说明</strong>
+                          <ul class="layui-list">
+                            {% for sk in s_block.skills %}
+                            <li>{{ sk }}</li>
+                            {% endfor %}
+                          </ul>
+                        </div>
+                        {% endif %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.8.18/layui.min.js"></script>
+  <script>
+    layui.use(['element'], function(){
+      var element = layui.element;
+      element.render('collapse');
+    });
+    document.querySelectorAll('.char-nav a[data-char-index]').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var id = 'char-' + this.getAttribute('data-char-index');
+        var el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  </script>
+</body>
+</html>

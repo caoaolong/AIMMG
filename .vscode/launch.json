@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flask: server.py",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "console": "internalConsole",
+      "env": { "FLASK_APP": "server.py", "FLASK_DEBUG": "1" },
+      "args": ["run", "--host=0.0.0.0", "--port=5000"],
+      "cwd": "${workspaceFolder}",
+      "justMyCode": false
+    },
+    {
+      "name": "Python: story_roadmap.py",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/story_roadmap.py",
+      "args": ["--story", "shou_huo_ri", "--config", "config.yaml"],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "justMyCode": false
+    }
+  ]
+}

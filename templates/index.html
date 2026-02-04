@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>剧本列表</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.8.18/css/layui.min.css">
+</head>
+<body>
+  <div class="layui-container" style="padding-top: 24px;">
+    <div class="layui-card">
+      <div class="layui-card-header">
+        <h2>剧本列表</h2>
+      </div>
+      <div class="layui-card-body">
+        <ul class="layui-timeline">
+          {% for s in stories %}
+          <li class="layui-timeline-item">
+            <i class="layui-icon layui-timeline-axis layui-icon-read" style="color: #1E9FFF;"></i>
+            <div class="layui-timeline-content layui-text">
+              <a href="/story/{{ s.id }}" class="layui-btn layui-btn-primary layui-btn-fluid" style="text-align: left;">
+                <h3 class="layui-timeline-title">{{ s.name }}</h3>
+                <p style="color: #999;">点击进入详情</p>
+              </a>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% if not stories %}
+        <blockquote class="layui-elem-quote">当前目录下暂无 story__*.json 剧本文件。</blockquote>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/layui/2.8.18/layui.min.js"></script>
+  <script>
+    layui.use(function(){});
+  </script>
+</body>
+</html>

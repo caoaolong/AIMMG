@@ -1,1 +1,4 @@
 agentscope>=1.0.14
+flask>=3.0
+rich>=13.0
+alibabacloud-oss-v2>=1.2.3
