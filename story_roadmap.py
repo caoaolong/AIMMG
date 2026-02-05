@@ -14,7 +14,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from entity import Character, PlayerAgent
-from memory import StoryMemory
+from store.memory import StoryMemory
 
 parser = argparse.ArgumentParser()
 console = Console()

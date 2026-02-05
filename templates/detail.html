@@ -42,6 +42,22 @@
     .scene-content-wrap { margin-left: 180px; padding-left: 16px; }
     .scene-block { scroll-margin-top: 24px; }
     .scene-step-item { scroll-margin-top: 24px; }
+    /* 道具页：可折叠面板 */
+    .props-tab-pane { padding: 16px 0; }
+    .props-tab-pane .layui-colla-item { border-radius: 8px; overflow: hidden; margin-bottom: 10px; border: 1px solid #eee; }
+    .props-tab-pane .layui-colla-title { margin: 0; background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); font-size: 15px; padding: 14px 16px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; min-height: 24px; }
+    .props-tab-pane .layui-colla-title::before { flex-shrink: 0; margin-right: 4px; }
+    .props-tab-pane .layui-colla-title .prop-panel-name { flex: 1; min-width: 0; }
+    .props-tab-pane .layui-colla-title:hover { background: #f0f7ff; }
+    .props-tab-pane .layui-colla-content { padding: 0; border-top: 1px solid #eee; background: #fafafa; }
+    .prop-panel-count { font-size: 12px; color: #666; background: #e8e8e8; padding: 3px 10px; border-radius: 12px; }
+    .prop-children-wrap { padding: 12px 16px; }
+    .prop-child-item { background: #fff; border-radius: 6px; padding: 10px 14px; margin-bottom: 8px; border: 1px solid #eee; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: border-color 0.2s, box-shadow 0.2s; }
+    .prop-child-item:last-child { margin-bottom: 0; }
+    .prop-child-item:hover { border-color: #1E9FFF; box-shadow: 0 2px 8px rgba(30,159,255,0.12); }
+    .prop-child-name { font-weight: 600; font-size: 14px; color: #333; margin-bottom: 4px; display: block; }
+    .prop-child-desc { font-size: 13px; color: #666; line-height: 1.5; margin: 0; }
+    .prop-empty-hint { padding: 16px; color: #999; font-size: 13px; text-align: center; }
     @media (max-width: 768px) {
       .char-nav, .scene-nav { display: none; }
       .char-list-wrap, .scene-content-wrap { margin-left: 0; padding-left: 0; }
@@ -65,6 +81,7 @@
           <ul class="layui-tab-title">
             <li class="layui-this">场景</li>
             <li>角色</li>
+            <li>道具</li>
           </ul>
           <div class="layui-tab-content">
             <div class="layui-tab-item layui-show scene-tab-pane">
@@ -203,6 +220,37 @@
               </div>
               {% endfor %}
               </div>
+            </div>
+            <div class="layui-tab-item props-tab-pane">
+              <h4 style="margin: 0 0 20px 0; font-size: 16px; color: #333;">道具清单</h4>
+              {% if story.props %}
+              <div class="layui-collapse" lay-filter="props-collapse">
+                {% for prop in story.props %}
+                <div class="layui-colla-item">
+                  <h2 class="layui-colla-title">
+                    <span class="prop-panel-name">{{ prop.name }}</span>
+                    {% if prop.count is defined %}<span class="prop-panel-count">{{ prop.count }} 张/个</span>{% endif %}
+                  </h2>
+                  <div class="layui-colla-content">
+                    {% if prop.children %}
+                    <div class="prop-children-wrap">
+                      {% for child in prop.children %}
+                      <div class="prop-child-item">
+                        <span class="prop-child-name">{{ child.name }}</span>
+                        {% if child.description %}<p class="prop-child-desc">{{ child.description }}</p>{% endif %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="prop-empty-hint">无子项</div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <p class="layui-text" style="color: #999;">暂无道具信息。</p>
+              {% endif %}
             </div>
           </div>
         </div>
