@@ -56,8 +56,8 @@ def _parse_sse_line(line: str) -> dict | None:
 
 
 def _load_story(story_id: str) -> dict:
-    """加载故事 JSON，只读一次。"""
-    path = Path(__file__).resolve().parent / f"story__{story_id}.json"
+    """加载 data 目录下故事 JSON，只读一次。"""
+    path = Path(__file__).resolve().parent / "data" / f"story__{story_id}.json"
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -137,7 +137,7 @@ def generate_image(
 
 
 def generate_character(story_id: str, character_id: str, story_data: dict | None = None) -> str:
-    """生成角色立绘并保存到 results/characters/{character_id}.png。"""
+    """生成角色立绘并保存到 results/{story_id}/characters/{character_id}.png。"""
     if story_data is None:
         story_data = _load_story(story_id)
     prompt_text = ""
@@ -148,7 +148,7 @@ def generate_character(story_id: str, character_id: str, story_data: dict | None
             urls.append(f"{OSS_URL}/{story_id}/characters/{character_id}.png")
             break
     prompt = f"参考图片绘制一张写实动漫风格的角色图片，彩色，上半身，正面，不要有任何其他元素，图片的描述如下：{prompt_text}"
-    save_path = RESULTS_DIR / "characters" / f"{character_id}.png"
+    save_path = RESULTS_DIR / story_id / "characters" / f"{character_id}.png"
     return generate_image(
         prompt,
         urls,
@@ -158,9 +158,9 @@ def generate_character(story_id: str, character_id: str, story_data: dict | None
     )
 
 
-def _character_image_exists(character_id: str) -> bool:
+def _character_image_exists(story_id: str, character_id: str) -> bool:
     """检查角色图片是否已存在。"""
-    return (RESULTS_DIR / f"characters/{character_id}.png").is_file()
+    return (RESULTS_DIR / story_id / "characters" / f"{character_id}.png").is_file()
 
 
 def fetch_local_resources(prefix: str) -> list[str]:
@@ -196,13 +196,13 @@ def compare_resources(story_id: str, prefix: str) -> list[str]:
     return result
 
 
-def _scene_image_exists(scene_id: str) -> bool:
+def _scene_image_exists(story_id: str, scene_id: str) -> bool:
     """检查场景图片是否已存在。"""
-    return (RESULTS_DIR / "scenes" / f"{scene_id}.png").is_file()
+    return (RESULTS_DIR / story_id / "scenes" / f"{scene_id}.png").is_file()
 
 
-def generate_scene(scene: dict, scene_index: int = 0) -> str:
-    """生成场景图并保存到 results/scenes/{scene_id}.png。"""
+def generate_scene(story_id: str, scene: dict, scene_index: int = 0) -> str:
+    """生成场景图并保存到 results/{story_id}/scenes/{scene_id}.png。"""
     scene_id = scene.get("id", "")
     if not scene_id:
         return ""
@@ -216,7 +216,7 @@ def generate_scene(scene: dict, scene_index: int = 0) -> str:
     prompt_text = "\n".join(parts)
     prompt = f"参考以下剧本场景描述，绘制一张写实动漫风格的场景插画，彩色，氛围感强，不要出现具体人物正脸，描述如下：{prompt_text}"
     urls = []
-    save_path = RESULTS_DIR / "scenes" / f"{scene_id}.png"
+    save_path = RESULTS_DIR / story_id / "scenes" / f"{scene_id}.png"
     console.print(prompt)
     console.print(save_path)
     return generate_image(
@@ -235,11 +235,11 @@ def generate_all_scenes(story_id: str) -> None:
         scene_name = scene.get("name", f"场景 {index + 1}")
         if not scene_id:
             continue
-        if _scene_image_exists(scene_id):
+        if _scene_image_exists(story_id, scene_id):
             console.print(f"[dim]跳过（已存在）[/dim] {scene_name} ({scene_id})")
             continue
         console.print(Panel(f"[bold]{scene_name}[/bold] ({scene_id})", title="当前场景", border_style="blue"))
-        generate_scene(scene, scene_index=index)
+        generate_scene(story_id, scene, scene_index=index)
 
 
 def prepare_story_resources(story_id: str) -> None:
@@ -302,14 +302,14 @@ if __name__ == "__main__":
             story_data = _load_story(args.story)
             for char in story_data.get("characters", []):
                 cid = char["id"]
-                if _character_image_exists(cid):
+                if _character_image_exists(args.story, cid):
                     console.print(f"[dim]跳过（已存在）[/dim] {char['name']} ({cid})")
                     continue
                 console.print(
                     Panel(f"[bold]{char['name']}[/bold] ({cid})", title="当前角色", border_style="blue"))
                 generate_character(args.story, cid, story_data)
         else:
-            if _character_image_exists(args.id):
+            if _character_image_exists(args.story, args.id):
                 console.print(f"[dim]跳过（已存在）[/dim] {args.id}")
             else:
                 generate_character(args.story, args.id)
@@ -322,10 +322,10 @@ if __name__ == "__main__":
             story_data = _load_story(args.story)
             for scene in story_data.get("master", []):
                 if scene["id"] == args.id:
-                    if _scene_image_exists(args.id):
+                    if _scene_image_exists(args.story, args.id):
                         console.print(f"[dim]跳过（已存在）[/dim] {args.id}")
                         continue
-                    generate_scene(scene)
+                    generate_scene(args.story, scene)
                     break
     else:
         console.print(f"Unknown command: {args.command}")

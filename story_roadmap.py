@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import json
+from pathlib import Path
 from agentscope.message import Msg
 import yaml
 from typing import Dict
@@ -17,11 +18,13 @@ from memory import StoryMemory
 
 parser = argparse.ArgumentParser()
 console = Console()
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def parse_story(story_id: str) -> dict:
-    # 读取文件
-    with open(f"story__{story_id}.json", "r") as f:
+    # 读取 data 目录下剧本文件
+    path = DATA_DIR / f"story__{story_id}.json"
+    with open(path, "r", encoding="utf-8") as f:
         story = json.load(f)
         console.print("Story: " + story["name"],
                       justify="center", style="bold magenta")

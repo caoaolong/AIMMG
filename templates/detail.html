@@ -29,9 +29,22 @@
     .char-nav a:hover { background: #1E9FFF; color: #fff; }
     .char-list-wrap { margin-left: 160px; padding-left: 16px; }
     .char-list-item { scroll-margin-top: 24px; }
+    /* 场景页左侧固定导航（与角色页同风格） */
+    .scene-tab-pane { position: relative; }
+    .scene-nav { position: fixed; left: 0; top: 80px; bottom: 0; width: 220px; overflow-y: auto; z-index: 10; padding: 12px 0; }
+    .scene-nav .char-nav-title { padding: 0 12px 8px; font-size: 12px; color: #999; border-bottom: 1px solid #eee; margin-bottom: 8px; }
+    .scene-nav .char-nav-list { list-style: none; margin: 0; padding: 0; }
+    .scene-nav .char-nav-list li { margin: 0; }
+    .scene-nav .char-nav-list ul { list-style: none; margin: 0 0 8px 0; padding: 0 0 0 8px; border-left: 1px solid #ddd; }
+    .scene-nav a { display: block; padding: 6px 12px; color: #333; text-decoration: none; font-size: 13px; }
+    .scene-nav a:hover { background: #1E9FFF; color: #fff; }
+    .scene-nav .scene-title { padding: 6px 12px; font-size: 13px; font-weight: bold; color: #333; }
+    .scene-content-wrap { margin-left: 180px; padding-left: 16px; }
+    .scene-block { scroll-margin-top: 24px; }
+    .scene-step-item { scroll-margin-top: 24px; }
     @media (max-width: 768px) {
-      .char-nav { display: none; }
-      .char-list-wrap { margin-left: 0; padding-left: 0; }
+      .char-nav, .scene-nav { display: none; }
+      .char-list-wrap, .scene-content-wrap { margin-left: 0; padding-left: 0; }
       .char-list-item { flex-direction: column; }
       .char-list-left { width: 100%; max-width: 240px; margin: 0 auto; }
     }
@@ -40,9 +53,12 @@
 <body>
   <div class="layui-container" style="padding-top: 24px; padding-bottom: 48px;">
     <div class="layui-card">
-      <div class="layui-card-header">
+      <div class="layui-card-header" style="display: flex; align-items: center; gap: 16px;">
         <a href="/" class="layui-btn layui-btn-sm layui-btn-primary">← 返回列表</a>
-        <span style="margin-left: 12px; font-size: 18px;">{{ story.name }}</span>
+        <a href="{{ story.cover_url }}" target="_blank" style="flex-shrink: 0; width: 56px; height: 78px; overflow: hidden; background: #f0f0f0; border-radius: 4px; display: block;">
+          <img src="{{ story.cover_url }}" alt="{{ story.name }}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.style.display='none'">
+        </a>
+        <span style="font-size: 18px;">{{ story.name }}</span>
       </div>
       <div class="layui-card-body">
         <div class="layui-tab layui-tab-brief" lay-filter="detail">
@@ -51,37 +67,75 @@
             <li>角色</li>
           </ul>
           <div class="layui-tab-content">
-            <div class="layui-tab-item layui-show">
-              <div class="layui-collapse">
-                {% for scene in story.master %}
-                <div class="layui-colla-item">
-                  <h2 class="layui-colla-title">第 {{ loop.index }} 幕 {% if scene.name %}{{ scene.name }}{% endif %}</h2>
-                  <div class="layui-colla-content">
-                    {% if scene.prompts %}
-                    <h4>剧本片段</h4>
-                    {% for p in scene.prompts %}
-                    <div class="scene-prompt">{{ p }}</div>
+            <div class="layui-tab-item layui-show scene-tab-pane">
+              <nav class="scene-nav">
+                <div class="char-nav-title">场景与步骤</div>
+                <ul class="char-nav-list">
+                  {% for scene in story.scenes %}
+                  {% set scene_idx = loop.index0 %}
+                  <li>
+                    <div class="scene-title">第 {{ loop.index }} 幕 {{ scene.name or '未命名' }}</div>
+                    <ul class="char-nav-list">
+                      {% for step in scene.steps_display %}
+                      <li><a href="#scene-{{ scene_idx }}-step-{{ loop.index0 }}">步骤 {{ loop.index }}</a></li>
+                      {% endfor %}
+                      {% if not scene.steps_display and (scene.notes or scene.choices) %}
+                      <li><a href="#scene-{{ scene_idx }}">备注/选项</a></li>
+                      {% endif %}
+                    </ul>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </nav>
+              <div class="scene-content-wrap">
+              {% for scene in story.scenes %}
+              {% set scene_idx = loop.index0 %}
+              <div class="scene-block" id="scene-{{ scene_idx }}" style="margin-bottom: 32px;">
+                <h3 class="layui-font-16" style="margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+                  第 {{ loop.index }} 幕 {% if scene.name %}{{ scene.name }}{% endif %}
+                </h3>
+                {% if scene.steps_display %}
+                <ul class="layui-timeline">
+                  {% for step in scene.steps_display %}
+                  <li class="layui-timeline-item scene-step-item" id="scene-{{ scene_idx }}-step-{{ loop.index0 }}">
+                    <i class="layui-icon layui-timeline-axis layui-icon-read" style="color: #1E9FFF;"></i>
+                    <div class="layui-timeline-content layui-text">
+                      <h4 class="layui-timeline-title">步骤 {{ loop.index }}</h4>
+                      {% for block in step.blocks %}
+                      <div class="step-block" style="margin-bottom: 12px;">
+                        <span class="step-block-label" style="display: inline-block; font-size: 12px; color: #1E9FFF; margin-bottom: 6px;">{{ block.label }}</span>
+                        {% for line in block.lines %}
+                        <div class="scene-prompt">{{ line }}</div>
+                        {% endfor %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
+                {% if scene.notes %}
+                <div style="margin-top: 12px;">
+                  <h4 style="margin-bottom: 8px;">备注</h4>
+                  <ul class="layui-list">
+                    {% for n in scene.notes %}
+                    <li>{{ n }}</li>
                     {% endfor %}
-                    {% endif %}
-                    {% if scene.notes %}
-                    <h4>备注</h4>
-                    <ul class="layui-list">
-                      {% for n in scene.notes %}
-                      <li>{{ n }}</li>
-                      {% endfor %}
-                    </ul>
-                    {% endif %}
-                    {% if scene.choices %}
-                    <h4>选项</h4>
-                    <ul class="layui-list">
-                      {% for key, val in scene.choices.items() %}
-                      <li><strong>{{ key }}</strong>: {{ val.description if val is mapping else val }}</li>
-                      {% endfor %}
-                    </ul>
-                    {% endif %}
-                  </div>
+                  </ul>
                 </div>
-                {% endfor %}
+                {% endif %}
+                {% if scene.choices %}
+                <div style="margin-top: 12px;">
+                  <h4 style="margin-bottom: 8px;">选项</h4>
+                  <ul class="layui-list">
+                    {% for key, val in scene.choices.items() %}
+                    <li><strong>{{ key }}</strong>: {{ val.description if val is mapping else val }}</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                {% endif %}
+              </div>
+              {% endfor %}
               </div>
             </div>
             <div class="layui-tab-item char-tab-pane">
@@ -98,7 +152,7 @@
               <div class="char-list-item" id="char-{{ loop.index0 }}">
                 <div class="char-list-left">
                   <div class="char-avatar-wrap">
-                    <img class="char-avatar" src="/results/characters/{{ char.id }}.png" alt="{{ char.name }}" onerror="this.style.display='none'">
+                    <img class="char-avatar" src="/results/{{ story_id }}/characters/{{ char.id }}.png" alt="{{ char.name }}" onerror="this.style.display='none'">
                   </div>
                 </div>
                 <div class="char-list-right">
@@ -165,9 +219,20 @@
     document.querySelectorAll('.char-nav a[data-char-index]').forEach(function(link) {
       link.addEventListener('click', function(e) {
         e.preventDefault();
-        var id = 'char-' + this.getAttribute('data-char-index');
+        var id = 'char-' + link.getAttribute('data-char-index');
         var el = document.getElementById(id);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    document.querySelectorAll('.scene-nav a[href^="#"]').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        var href = this.getAttribute('href');
+        if (href && href.length > 1) {
+          e.preventDefault();
+          var id = href.slice(1);
+          var el = document.getElementById(id);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
     });
   </script>

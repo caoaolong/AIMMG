@@ -5,28 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>剧本列表</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/layui/2.8.18/css/layui.min.css">
+  <style>
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 24px;
+    }
+    .story-card {
+      display: block;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .story-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .story-card-cover {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: #f0f0f0;
+      overflow: hidden;
+    }
+    .story-card-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .story-card-body {
+      padding: 16px;
+    }
+    .story-card-title {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    .story-card-desc {
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+    }
+  </style>
 </head>
 <body>
-  <div class="layui-container" style="padding-top: 24px;">
+  <div class="layui-container" style="padding-top: 24px; padding-bottom: 48px;">
     <div class="layui-card">
       <div class="layui-card-header">
         <h2>剧本列表</h2>
       </div>
       <div class="layui-card-body">
-        <ul class="layui-timeline">
+        {% if stories %}
+        <div class="story-grid">
           {% for s in stories %}
-          <li class="layui-timeline-item">
-            <i class="layui-icon layui-timeline-axis layui-icon-read" style="color: #1E9FFF;"></i>
-            <div class="layui-timeline-content layui-text">
-              <a href="/story/{{ s.id }}" class="layui-btn layui-btn-primary layui-btn-fluid" style="text-align: left;">
-                <h3 class="layui-timeline-title">{{ s.name }}</h3>
-                <p style="color: #999;">点击进入详情</p>
-              </a>
+          <a href="/story/{{ s.id }}" class="story-card">
+            <div class="story-card-cover">
+              <img src="{{ s.cover_url }}" alt="{{ s.name }}" onerror="this.parentElement.style.background='#e8e8e8'; this.style.display='none'">
             </div>
-          </li>
+            <div class="story-card-body">
+              <h3 class="story-card-title">{{ s.name }}</h3>
+              <p class="story-card-desc">{{ s.character_count }} 个角色 · {{ s.scene_count }} 个场景</p>
+            </div>
+          </a>
           {% endfor %}
-        </ul>
-        {% if not stories %}
+        </div>
+        {% else %}
         <blockquote class="layui-elem-quote">当前目录下暂无 story__*.json 剧本文件。</blockquote>
         {% endif %}
       </div>
